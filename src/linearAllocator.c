@@ -42,27 +42,15 @@ bool initMemoryBuffer(MemoryBuffer *buffer) {
 	return true;
 }
 
-// static bool alignMemoryBuffer(MemoryBuffer *buffer, size_t alignment) {
-//   if (!memoryBufferValid(buffer)) {
-//     printf("Failed to call alignMemoryBuffer as buffer is invalid.\n");
-//     return false;
-//   } else if (alignment == 0) {
-// 		printf("Error: Division by zero error.\n"); 
-// 		return false;
-// 	}
-//
-// 	while (buffer -> bufferOffset % alignment != 0) {
-// 		if (buffer -> bufferOffset + 1 > MAX_MEMORY_BUFFER_SIZE) {
-// 			printf("Error: Cannot align memory buffer due to overflow.\n"); 
-// 			return false;
-// 		}
-//
-// 		buffer -> bufferOffset += 1;
-// 	}
-//
-//   return true;
-// }
-
+/*
+ * Need to align the actual memory address of a pointer allocation,
+ * not only the relative buffer offset.
+ *
+ * To get final pointer, ptrToVirtualAddressSpace + bufferOffset. Perform
+ * pointer arithmetic to correct align this pointer. No need to align 
+ * bufferOffset, as bufferOffset only tells us how many bytes we are into 
+ * the buffer. 
+ */
 static bool alignMemoryBuffer(MemoryBuffer *buffer, size_t alignment) {
   if (!memoryBufferValid(buffer)) {
     printf("Failed to call alignMemoryBuffer as buffer is invalid.\n");
@@ -72,15 +60,12 @@ static bool alignMemoryBuffer(MemoryBuffer *buffer, size_t alignment) {
 		return false;
 	}
  
-  /*
-   * This algorithm needs fixing. 
-   */
   if (buffer -> bufferOffset % alignment == 0) {
     return true;
   } else {
     size_t quotient = (buffer -> bufferOffset - (buffer -> bufferOffset % alignment)) / alignment; 
-    size_t offsetAmount = (alignment * quotient) / buffer -> bufferOffset; 
-    
+    size_t offsetAmount = alignment * (quotient + 1) - buffer -> bufferOffset;
+
     if (buffer -> bufferOffset > MAX_MEMORY_BUFFER_SIZE - offsetAmount) {
       printf("Error: Cannot align memory due to buffer overflow.\n"); 
       return false;
@@ -90,6 +75,10 @@ static bool alignMemoryBuffer(MemoryBuffer *buffer, size_t alignment) {
   }
 
   return true;
+}
+
+static size_t getPadding(size_t alignment) {
+
 }
 
 static bool incrementBufferOffset(MemoryBuffer *buffer, size_t offsetAmount) {
@@ -126,6 +115,15 @@ void *lalloc(MemoryBuffer *buffer, size_t blockSize, size_t alignment) {
 
   char *ptr = (char*) buffer -> ptrToVirtualAddressSpace;
   ptr += buffer -> bufferOffset;  
+  
+  size_t ptrPadding = getPadding(alignment);
+  
+  if (ptrPadding + buffer.bufferOffset > MAX_MEMORY_BUFFER_SIZE) {
+    printf("Error: Cannot call lalloc due to buffer overflow.\n");
+    return NULL;
+  }
+  
+  ptr += ptrPadding;
 
   if (!incrementBufferOffset(buffer, blockSize)) {
     printf("Error: Cannot call lalloc due to increment buffer offset failing.\n");
