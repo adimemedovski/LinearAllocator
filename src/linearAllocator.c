@@ -22,13 +22,28 @@ bool initMemoryBuffer(MemoryBuffer *buffer) {
 	return true;
 }
 
-bool alignMemoryBuffer(MemoryBuffer *buffer, size_t sizeOfType) {
-	if (sizeOfType == 0) {
+bool memoryBufferValid(MemoryBuffer *buffer) {
+  if (buffer == NULL) {
+    printf("Error: Buffer was not initialised correctly or is invalid.\n");
+    return false;
+  } else if (buffer -> ptrToVirtualAddressSpace == NULL) {
+    printf("Error: Buffer not valid as ptr to virtual address space is NULL.\n");
+    return false;
+  }
+
+  return true;
+}
+
+bool allignMemoryBuffer(MemoryBuffer *buffer, size_t allignment) {
+  if (!memoryBufferValid(buffer)) {
+    printf("Failed to call allignMemoryBuffer as buffer is invalid.\n");
+    return false;
+  } else if (allignment == 0) {
 		printf("Error: Division by zero error.\n"); 
 		return false;
 	}
 
-	while (buffer -> bufferOffset % sizeOfType != 0) {
+	while (buffer -> bufferOffset % allignment != 0) {
 		if (buffer -> bufferOffset + 1 > MAX_MEMORY_BUFFER_SIZE) {
 			printf("Error: Cannot align memory buffer due to overflow.\n"); 
 			return false;
@@ -41,7 +56,10 @@ bool alignMemoryBuffer(MemoryBuffer *buffer, size_t sizeOfType) {
 }
 
 bool incrementBufferOffset(MemoryBuffer *buffer, size_t offsetAmount) {
-	if (buffer -> bufferOffset > MAX_MEMORY_BUFFER_SIZE - offsetAmount) {
+  if (!memoryBufferValid(buffer)) {
+    printf("Error; Failed to call incrementBufferOffset as buffer is invalid.\n");
+    return false;
+  } else if (buffer -> bufferOffset > MAX_MEMORY_BUFFER_SIZE - offsetAmount) {
 		printf("Error: Cannot increment buffer offset due to overflow.\n"); 
 		return false;
 	}
@@ -51,28 +69,31 @@ bool incrementBufferOffset(MemoryBuffer *buffer, size_t offsetAmount) {
 	return true;
 }
 
-void *lalloc(MemoryBuffer *buffer, size_t blockSize, size_t sizeOfType) {
-  if (blockSize == 0) {
+void *lalloc(MemoryBuffer *buffer, size_t blockSize, size_t allignment) {
+  if (!memoryBufferValid(buffer)) {
+    printf("Error: Failed to call lalloc due to buffer being invalid.\n");
+    return NULL;
+  } else if (blockSize == 0) {
     printf("Error: Cannot call lalloc due to block size being 0.\n");
     return NULL;
-  } else if (sizeOfType == 0) {
-    printf("Error: Cannot call lalloc due to sizeOfType being 0.\n");
+  } else if (allignment == 0) {
+    printf("Error: Cannot call lalloc due to allignment being 0.\n");
     return NULL;
-  } else if (buffer -> ptrToVirtualAddressSpace == NULL) {
-    printf("Error: Failed to call lalloc due to invalid virtual address space.\n");
-    return NULL; 
-  } else if (!alignMemoryBuffer(buffer, sizeOfType)) {
-		printf("Error: Failed to align memory buffer when executing lalloc.\n");
-		return NULL;
-	} else if (buffer -> bufferOffset + blockSize > MAX_MEMORY_BUFFER_SIZE) {
-		printf("Error: Failed to call lalloc due to memory buffer overflow.\n");
-		return NULL;
+  } else if (!allignMemoryBuffer(buffer, allignment)) {
+    printf("Error: Failed to align memory buffer when executing lalloc.\n");
+    return NULL;
+  } else if (buffer -> bufferOffset + blockSize > MAX_MEMORY_BUFFER_SIZE) {
+    printf("Error: Failed to call lalloc due to memory buffer overflow.\n");
+    return NULL;
   }
-	
-  char *ptr = (char*) buffer -> ptrToVirtualAddressSpace;
-	ptr += buffer -> bufferOffset;  
 
-	buffer -> bufferOffset += blockSize;
+  char *ptr = (char*) buffer -> ptrToVirtualAddressSpace;
+  ptr += buffer -> bufferOffset;  
+
+  if (!incrementBufferOffset(buffer, blockSize)) {
+    printf("Error: Cannot call lalloc due to increment buffer offset failing.\n");
+    return NULL;
+  }
 
 	return (void*) ptr;
 }
@@ -82,6 +103,14 @@ void rlalloc(MemoryBuffer *buffer) {
 }
 
 void dlalloc(MemoryBuffer *buffer) {
-	munmap(buffer -> ptrToVirtualAddressSpace, MAX_MEMORY_BUFFER_SIZE);
-	buffer -> bufferOffset = 0;
+  if (buffer == NULL) {
+    return;
+  } else if (buffer -> ptrToVirtualAddressSpace == NULL) {
+    buffer -> bufferOffset = 0; 
+    return;
+  }	
+  
+  munmap(buffer -> ptrToVirtualAddressSpace, MAX_MEMORY_BUFFER_SIZE);
+  buffer -> ptrToVirtualAddressSpace = NULL;	
+  buffer -> bufferOffset = 0;
 }

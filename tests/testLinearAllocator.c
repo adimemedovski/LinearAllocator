@@ -37,9 +37,9 @@ void testLalloc(void) {
 
 	size_t blockSizeOfTest = sizeof(Test);
 
-	size_t *ptrOne = (size_t*) lalloc(&buffer, sizeof(size_t), sizeof(size_t));
-	char *ptrTwo = (char*) lalloc(&buffer, sizeof(char), sizeof(char));
-	size_t *ptrThree = (size_t*) lalloc(&buffer, sizeof(size_t), sizeof(size_t));
+	size_t *ptrOne = (size_t*) lalloc(&buffer, sizeof(size_t), _Alignof(size_t));
+	char *ptrTwo = (char*) lalloc(&buffer, sizeof(char), _Alignof(char));
+	size_t *ptrThree = (size_t*) lalloc(&buffer, sizeof(size_t), _Alignof(size_t));
 
 	TEST_ASSERT_EQUAL_size_t(24, buffer.bufferOffset);
 
@@ -55,7 +55,7 @@ void testLalloc(void) {
 	TEST_ASSERT_TRUE(ptrFour == NULL);
 	TEST_ASSERT_EQUAL_size_t(snapShotOfBufferOffsetOne, buffer.bufferOffset);
 
-	size_t *ptrFive = (size_t*) lalloc(&buffer, 0, sizeof(size_t));
+	size_t *ptrFive = (size_t*) lalloc(&buffer, 0, _Alignof(size_t));
 
 	TEST_ASSERT_TRUE(ptrFive == NULL);
 	TEST_ASSERT_EQUAL_size_t(snapShotOfBufferOffsetOne, buffer.bufferOffset);
@@ -73,7 +73,7 @@ void testLalloc(void) {
 	size_t overFlowByteAmount = MAX_MEMORY_BUFFER_SIZE - buffer.bufferOffset + 1;
 	size_t overFlowBlockSize = overFlowByteAmount / sizeof(size_t) + 1;
 
-	size_t *ptrSeven = (size_t*) lalloc(&buffer, sizeof(size_t) * overFlowBlockSize, sizeof(size_t));
+	size_t *ptrSeven = (size_t*) lalloc(&buffer, sizeof(size_t) * overFlowBlockSize, _Alignof(size_t));
 
 	TEST_ASSERT_TRUE(ptrSeven == NULL);
 
@@ -84,7 +84,7 @@ void testLalloc(void) {
 
 	size_t snapShotOfBufferOffsetTwo = buffer.bufferOffset;
 
-	size_t *ptrEight = (size_t*) lalloc(&buffer, sizeof(size_t) * 3, sizeof(size_t));
+	size_t *ptrEight = (size_t*) lalloc(&buffer, sizeof(size_t) * 3, _Alignof(size_t));
 
 	/*
 	 * This test depends on whether the previous lalloc call caused a disruption to the allignment of 
