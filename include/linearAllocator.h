@@ -7,8 +7,8 @@
 #define MAX_MEMORY_BUFFER_SIZE (4096 * 10)
 
 typedef struct {
-  size_t bufferOffset;
-  void *ptrToVirtualAddressSpace;
+	size_t bufferOffset;
+	void *ptrToVirtualAddressSpace;
 } MemoryBuffer;
 
 bool initMemoryBuffer(MemoryBuffer *buffer);
