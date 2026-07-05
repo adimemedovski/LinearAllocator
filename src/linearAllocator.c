@@ -7,22 +7,7 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
-bool initMemoryBuffer(MemoryBuffer *buffer) {
-	buffer -> ptrToVirtualAddressSpace = (void*) mmap(NULL, MAX_MEMORY_BUFFER_SIZE,
-			PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS,
-			-1, 0);
-
-	if (buffer -> ptrToVirtualAddressSpace == MAP_FAILED) {
-		printf("Failed to initialise memory buffer.\n");
-		return false; 
-	}
-
-	buffer -> bufferOffset = 0;
-
-	return true;
-}
-
-bool memoryBufferValid(MemoryBuffer *buffer) {
+static bool memoryBufferValid(MemoryBuffer *buffer) {
   if (buffer == NULL) {
     printf("Error: Buffer was not initialised correctly or is invalid.\n");
     return false;
@@ -34,16 +19,39 @@ bool memoryBufferValid(MemoryBuffer *buffer) {
   return true;
 }
 
-bool allignMemoryBuffer(MemoryBuffer *buffer, size_t allignment) {
+bool initMemoryBuffer(MemoryBuffer *buffer) {
+  if (buffer == NULL) {
+    printf("Error: Failed to initialise memory buffer due to buffer == NULL.\n"); 
+    return false; 
+  } 
+  
+  buffer -> ptrToVirtualAddressSpace = (void*) mmap(NULL, MAX_MEMORY_BUFFER_SIZE,
+			PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS,
+			-1, 0);
+
+	if (buffer -> ptrToVirtualAddressSpace == MAP_FAILED) {
+	  buffer -> ptrToVirtualAddressSpace = NULL;	
+	  buffer -> bufferOffset = 0;	
+    printf("Failed to initialise memory buffer.\n");
+
+    return false; 
+	}
+
+	buffer -> bufferOffset = 0;
+
+	return true;
+}
+
+static bool alignMemoryBuffer(MemoryBuffer *buffer, size_t alignment) {
   if (!memoryBufferValid(buffer)) {
-    printf("Failed to call allignMemoryBuffer as buffer is invalid.\n");
+    printf("Failed to call alignMemoryBuffer as buffer is invalid.\n");
     return false;
-  } else if (allignment == 0) {
+  } else if (alignment == 0) {
 		printf("Error: Division by zero error.\n"); 
 		return false;
 	}
 
-	while (buffer -> bufferOffset % allignment != 0) {
+	while (buffer -> bufferOffset % alignment != 0) {
 		if (buffer -> bufferOffset + 1 > MAX_MEMORY_BUFFER_SIZE) {
 			printf("Error: Cannot align memory buffer due to overflow.\n"); 
 			return false;
@@ -55,7 +63,7 @@ bool allignMemoryBuffer(MemoryBuffer *buffer, size_t allignment) {
   return true;
 }
 
-bool incrementBufferOffset(MemoryBuffer *buffer, size_t offsetAmount) {
+static bool incrementBufferOffset(MemoryBuffer *buffer, size_t offsetAmount) {
   if (!memoryBufferValid(buffer)) {
     printf("Error; Failed to call incrementBufferOffset as buffer is invalid.\n");
     return false;
@@ -69,20 +77,20 @@ bool incrementBufferOffset(MemoryBuffer *buffer, size_t offsetAmount) {
 	return true;
 }
 
-void *lalloc(MemoryBuffer *buffer, size_t blockSize, size_t allignment) {
+void *lalloc(MemoryBuffer *buffer, size_t blockSize, size_t alignment) {
   if (!memoryBufferValid(buffer)) {
     printf("Error: Failed to call lalloc due to buffer being invalid.\n");
     return NULL;
   } else if (blockSize == 0) {
     printf("Error: Cannot call lalloc due to block size being 0.\n");
     return NULL;
-  } else if (allignment == 0) {
-    printf("Error: Cannot call lalloc due to allignment being 0.\n");
+  } else if (alignment == 0) {
+    printf("Error: Cannot call lalloc due to alignment being 0.\n");
     return NULL;
-  } else if (!allignMemoryBuffer(buffer, allignment)) {
+  } else if (!alignMemoryBuffer(buffer, alignment)) {
     printf("Error: Failed to align memory buffer when executing lalloc.\n");
     return NULL;
-  } else if (buffer -> bufferOffset + blockSize > MAX_MEMORY_BUFFER_SIZE) {
+  } else if (buffer -> bufferOffset > MAX_MEMORY_BUFFER_SIZE - blockSize) {
     printf("Error: Failed to call lalloc due to memory buffer overflow.\n");
     return NULL;
   }
@@ -99,7 +107,12 @@ void *lalloc(MemoryBuffer *buffer, size_t blockSize, size_t allignment) {
 }
 
 void rlalloc(MemoryBuffer *buffer) {
-	buffer -> bufferOffset = 0;
+  if (buffer == NULL) {
+    printf("Error: Failed to call rlalloc due to buffer == NULL.\n");
+    return;
+  }	
+ 
+  buffer -> bufferOffset = 0;
 }
 
 void dlalloc(MemoryBuffer *buffer) {

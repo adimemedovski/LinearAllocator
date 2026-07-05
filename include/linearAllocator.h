@@ -13,13 +13,7 @@ typedef struct {
 
 bool initMemoryBuffer(MemoryBuffer *buffer);
 
-bool memoryBufferValid(MemoryBuffer *buffer);
-
-bool allignMemoryBuffer(MemoryBuffer *buffer, size_t allignment);
-
-bool incrementBufferOffset(MemoryBuffer *buffer, size_t offsetAmount);
-
-void *lalloc(MemoryBuffer *buffer, size_t blockSize, size_t allignment);
+void *lalloc(MemoryBuffer *buffer, size_t blockSize, size_t alignment);
 
 void rlalloc(MemoryBuffer *buffer);
 

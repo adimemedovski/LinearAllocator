@@ -25,7 +25,7 @@ void testLalloc(void) {
 
 	/*
 	 * Test one:
-	 *     - Testing for allignment;
+	 *     - Testing for alignment;
 	 *     - and correct padding.
 	 */
 
@@ -79,7 +79,7 @@ void testLalloc(void) {
 
 	/*
 	 * Test Four:
-	 *     - More testing on padding and allignment.
+	 *     - More testing on padding and alignment.
 	 */
 
 	size_t snapShotOfBufferOffsetTwo = buffer.bufferOffset;
@@ -87,10 +87,10 @@ void testLalloc(void) {
 	size_t *ptrEight = (size_t*) lalloc(&buffer, sizeof(size_t) * 3, _Alignof(size_t));
 
 	/*
-	 * This test depends on whether the previous lalloc call caused a disruption to the allignment of 
+	 * This test depends on whether the previous lalloc call caused a disruption to the alignment of 
 	 * the second lalloc call. Hence we must test both cases. In this first case, the test passed
 	 * so we can assume the previous lalloc call did not cause any disruption. Thus, in our next 
-	 * test case we will purposely disrupt the allignment of a size_t lalloc call.
+	 * test case we will purposely disrupt the alignment of a size_t lalloc call.
 	 */
 	TEST_ASSERT_EQUAL_size_t(snapShotOfBufferOffsetTwo + 24, buffer.bufferOffset); 
 
