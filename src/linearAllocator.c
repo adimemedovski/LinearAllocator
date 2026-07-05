@@ -42,6 +42,27 @@ bool initMemoryBuffer(MemoryBuffer *buffer) {
 	return true;
 }
 
+// static bool alignMemoryBuffer(MemoryBuffer *buffer, size_t alignment) {
+//   if (!memoryBufferValid(buffer)) {
+//     printf("Failed to call alignMemoryBuffer as buffer is invalid.\n");
+//     return false;
+//   } else if (alignment == 0) {
+// 		printf("Error: Division by zero error.\n"); 
+// 		return false;
+// 	}
+//
+// 	while (buffer -> bufferOffset % alignment != 0) {
+// 		if (buffer -> bufferOffset + 1 > MAX_MEMORY_BUFFER_SIZE) {
+// 			printf("Error: Cannot align memory buffer due to overflow.\n"); 
+// 			return false;
+// 		}
+//
+// 		buffer -> bufferOffset += 1;
+// 	}
+//
+//   return true;
+// }
+
 static bool alignMemoryBuffer(MemoryBuffer *buffer, size_t alignment) {
   if (!memoryBufferValid(buffer)) {
     printf("Failed to call alignMemoryBuffer as buffer is invalid.\n");
@@ -50,15 +71,23 @@ static bool alignMemoryBuffer(MemoryBuffer *buffer, size_t alignment) {
 		printf("Error: Division by zero error.\n"); 
 		return false;
 	}
+ 
+  /*
+   * This algorithm needs fixing. 
+   */
+  if (buffer -> bufferOffset % alignment == 0) {
+    return true;
+  } else {
+    size_t quotient = (buffer -> bufferOffset - (buffer -> bufferOffset % alignment)) / alignment; 
+    size_t offsetAmount = (alignment * quotient) / buffer -> bufferOffset; 
+    
+    if (buffer -> bufferOffset > MAX_MEMORY_BUFFER_SIZE - offsetAmount) {
+      printf("Error: Cannot align memory due to buffer overflow.\n"); 
+      return false;
+    }
 
-	while (buffer -> bufferOffset % alignment != 0) {
-		if (buffer -> bufferOffset + 1 > MAX_MEMORY_BUFFER_SIZE) {
-			printf("Error: Cannot align memory buffer due to overflow.\n"); 
-			return false;
-		}
-
-		buffer -> bufferOffset += 1;
-	}
+    buffer -> bufferOffset += offsetAmount;
+  }
 
   return true;
 }
