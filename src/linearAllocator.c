@@ -53,10 +53,7 @@ static int getAlignmentPadding(MemoryBuffer *buffer, size_t alignment) {
     else if (address % alignment == 0) {
         return 0;
     } else {
-        size_t quotient = (address - (address % alignment)) / alignment; 
-        size_t offsetAmount = alignment * (quotient + 1) - address;
-       
-        return offsetAmount;
+        return alignment - (address % alignment);
     }
 
 }
