@@ -11,37 +11,33 @@ void tearDown(void) {
 
 }
 
-void testInitMemoryBuffer(void) {
-	MemoryBuffer buffer;
-	initMemoryBuffer(&buffer);
-
-	TEST_ASSERT_EQUAL_size_t(0, buffer.bufferOffset);
+void testInitMemoryBuffer(void) { MemoryBuffer buffer; initMemoryBuffer(&buffer); TEST_ASSERT_EQUAL_size_t(0, buffer.bufferOffset);
 	TEST_ASSERT_FALSE(buffer.ptrToVirtualAddressSpace == NULL);
 }
 
 void testLalloc(void) {
 	MemoryBuffer buffer;
 	initMemoryBuffer(&buffer);
-
 	/*
 	 * Test one:
 	 *     - Testing for alignment;
 	 *     - and correct padding.
 	 */
 
+
 	typedef struct {
 		size_t x;
 		char y;
 		size_t z;
 	} Test;
-
+    
 	size_t blockSizeOfTest = sizeof(Test);
 
 	size_t *ptrOne = (size_t*) lalloc(&buffer, sizeof(size_t), _Alignof(size_t));
 	char *ptrTwo = (char*) lalloc(&buffer, sizeof(char), _Alignof(char));
 	size_t *ptrThree = (size_t*) lalloc(&buffer, sizeof(size_t), _Alignof(size_t));
-
-	TEST_ASSERT_EQUAL_size_t(24, buffer.bufferOffset);
+    
+	TEST_ASSERT_EQUAL_size_t(blockSizeOfTest, buffer.bufferOffset);
 
 	/*
 	 * Test two:
@@ -99,8 +95,7 @@ void testLalloc(void) {
 	size_t snapShotOfBufferOffsetThree = buffer.bufferOffset;
 
 	size_t *ptrTen = (size_t*) lalloc(&buffer, sizeof(size_t) * 2, sizeof(size_t));
-
-
+    
 	TEST_ASSERT_EQUAL_size_t(snapShotOfBufferOffsetThree + 7 + sizeof(size_t) * 2, buffer.bufferOffset);
   
 }
