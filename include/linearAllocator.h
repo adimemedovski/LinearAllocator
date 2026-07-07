@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#define MAX_MEMORY_BUFFER_SIZE (4096 * 10)
+#define MAX_MEMORY_BUFFER_SIZE ((size_t) 4096 * 10)
 
 typedef struct {
 	size_t bufferOffset;
