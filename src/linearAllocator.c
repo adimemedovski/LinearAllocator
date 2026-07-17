@@ -6,12 +6,15 @@
 #include <stdbool.h>
 #include <sys/mman.h>
 #include <unistd.h>
+#include <stdint.h>
 
 static bool memoryBufferValid(MemoryBuffer *buffer) {
     if (buffer == NULL) {
         fprintf(stderr, "Error: Buffer was not initialised correctly or is invalid.\n");
         return false;
-    } else if (buffer -> ptrToVirtualAddressSpace == NULL) {
+    } 
+   
+    if (buffer -> ptrToVirtualAddressSpace == NULL) {
         fprintf(stderr, "Error: Buffer not valid as ptr to virtual address space is NULL.\n"); 
         return false; 
     }
@@ -50,18 +53,18 @@ static int getAlignmentPadding(MemoryBuffer *buffer, size_t alignment) {
         fprintf(stderr, "Error: Failed to call getAlignmentPadding as alignment cannot be zero -- Division by zero error.\n");
         return -1; 
     }   
-    else if (address % alignment == 0) {
+    
+    if (address % alignment == 0) {
         return 0;
-    } else {
-        return alignment - (address % alignment);
-    }
+    } 
+
+    return alignment - (address % alignment);
 }
 
 static bool incrementBufferOffset(MemoryBuffer *buffer, size_t offsetAmount) {
     if (!memoryBufferValid(buffer)) {
         fprintf(stderr, "Error; Failed to call incrementBufferOffset as buffer is invalid.\n");
         return false;
-
     }
 
     if (buffer -> bufferOffset >= MAX_MEMORY_BUFFER_SIZE) {
@@ -112,17 +115,24 @@ void *lalloc(MemoryBuffer *buffer, size_t blockSize, size_t alignment) {
     }
 
     int alignmentPadding = getAlignmentPadding(buffer, alignment);
-    
+
     if (alignmentPadding == -1) {
         fprintf(stderr, "Error: Failed to call lalloc due to invalid alignment padding.\n");
         return NULL;
         // Need to add overflow checking.
     } 
+    
+    size_t padding = (size_t) alignmentPadding;
+    
+    if (padding > SIZE_MAX - blockSize) {
+        fprintf(stderr, "Error: Failed to call lalloc due to overflow error.\n");
+        return NULL;
+    }
 
     char *ptr = (char*) buffer -> ptrToVirtualAddressSpace;
     ptr += (buffer -> bufferOffset) + alignmentPadding; 
    
-    if (!incrementBufferOffset(buffer, alignmentPadding + blockSize)) {
+    if (!incrementBufferOffset(buffer, padding + blockSize)) {
         fprintf(stderr, "Error: Failed to call lalloc due to failure of incrementing buffer offset.\n");
         return NULL;
     }
@@ -140,9 +150,11 @@ void rlalloc(MemoryBuffer *buffer) {
 }
 
 void dlalloc(MemoryBuffer *buffer) {
-    if (buffer == NULL) {
+    if (buffer == NULL)  {
         return;
-    } else if (buffer -> ptrToVirtualAddressSpace == NULL) {
+    } 
+   
+    if (buffer -> ptrToVirtualAddressSpace == NULL) {
         buffer -> bufferOffset = 0; 
         return;
     }	
