@@ -61,8 +61,23 @@ static bool incrementBufferOffset(MemoryBuffer *buffer, size_t offsetAmount) {
     if (!memoryBufferValid(buffer)) {
         fprintf(stderr, "Error; Failed to call incrementBufferOffset as buffer is invalid.\n");
         return false;
-    } else if (buffer -> bufferOffset > MAX_MEMORY_BUFFER_SIZE - offsetAmount) {
-        fprintf(stderr, "Error: Cannot increment buffer offset due to overflow.\n"); 
+
+    }
+
+    if (buffer -> bufferOffset >= MAX_MEMORY_BUFFER_SIZE) {
+        fprintf(stderr, "Error: Failed to call incrementBufferOffet as bufferOffset exceeds buffer size.\n");
+        return false;
+    }
+    
+    if (offsetAmount > MAX_MEMORY_BUFFER_SIZE) {
+        fprintf(stderr, "Error: Failed to call incrementBufferOffset as offsetAmount exceeds buffer size.\n");
+        return false;
+    }
+
+    size_t remainder = MAX_MEMORY_BUFFER_SIZE - buffer -> bufferOffset;
+    
+    if (offsetAmount > remainder) {
+        fprintf(stderr, "Error: Failed to call incrementBufferOffset as offset amount exceeds buffer size.\n");
         return false;
     }
 
@@ -86,7 +101,7 @@ static bool validateStateOfLalloc(MemoryBuffer *buffer, size_t blockSize, size_t
         fprintf(stderr, "Error: Cannot call lalloc due to alignment being 0.\n");
         return false;
     } 
-   
+  
     if (buffer -> bufferOffset > MAX_MEMORY_BUFFER_SIZE - blockSize) {
         fprintf(stderr, "Error: Failed to call lalloc due to memory buffer overflow.\n");
         return false;
@@ -106,6 +121,7 @@ void *lalloc(MemoryBuffer *buffer, size_t blockSize, size_t alignment) {
     if (alignmentPadding == -1) {
         fprintf(stderr, "Error: Failed to call lalloc due to invalid alignment padding.\n");
         return NULL;
+        // Need to add overflow checking.
     } else if (buffer -> bufferOffset > MAX_MEMORY_BUFFER_SIZE - blockSize - alignmentPadding) {
         fprintf(stderr, "Error: Failed to call lalloc due to buffer overflow.\n");
         return NULL;
