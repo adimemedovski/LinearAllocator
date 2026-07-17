@@ -117,10 +117,7 @@ void *lalloc(MemoryBuffer *buffer, size_t blockSize, size_t alignment) {
         fprintf(stderr, "Error: Failed to call lalloc due to invalid alignment padding.\n");
         return NULL;
         // Need to add overflow checking.
-    } else if (buffer -> bufferOffset > MAX_MEMORY_BUFFER_SIZE - blockSize - alignmentPadding) {
-        fprintf(stderr, "Error: Failed to call lalloc due to buffer overflow.\n");
-        return NULL;
-    }
+    } 
 
     char *ptr = (char*) buffer -> ptrToVirtualAddressSpace;
     ptr += (buffer -> bufferOffset) + alignmentPadding; 
