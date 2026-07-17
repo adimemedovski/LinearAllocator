@@ -100,12 +100,7 @@ static bool validateStateOfLalloc(MemoryBuffer *buffer, size_t blockSize, size_t
     if (alignment == 0) {
         fprintf(stderr, "Error: Cannot call lalloc due to alignment being 0.\n");
         return false;
-    } 
-  
-    if (buffer -> bufferOffset > MAX_MEMORY_BUFFER_SIZE - blockSize) {
-        fprintf(stderr, "Error: Failed to call lalloc due to memory buffer overflow.\n");
-        return false;
-    } 
+    }
 
     return true;
 }
